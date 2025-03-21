@@ -11,10 +11,10 @@ load_dotenv()
 fake = Faker()
 num_rows = 100
 data = {
-    'created_at': [fake.date_time_this_decade().strftime('%m/%d/%Y') for _ in range(num_rows)],
+    'created_at': [fake.date_time_this_decade() for _ in range(num_rows)],
     'row_number': list(range(1, num_rows + 1)),
-    'start_timestamp': [fake.date_time_this_decade().strftime('%m/%d/%Y') for _ in range(num_rows)],
-    'end_timestamp': [fake.date_time_this_decade().strftime('%m/%d/%Y') for _ in range(num_rows)],
+    'start_timestamp': [fake.date_time_this_decade() for _ in range(num_rows)],
+    'end_timestamp': [fake.date_time_this_decade() for _ in range(num_rows)],
     'trace_id': [fake.uuid4() for _ in range(num_rows)],
     'span_id': [fake.uuid4() for _ in range(num_rows)],
     'parent_span_id': [fake.uuid4() for _ in range(num_rows)],
