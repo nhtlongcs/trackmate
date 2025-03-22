@@ -79,7 +79,7 @@ class GoogleSheetTool:
         range_name: str,
         values: pd.DataFrame,
     ) -> pd.DataFrame:
-        """Get Google Sheet Range values
+        """Write Google Sheet Range values
 
         Args:
             sheet_id: ID of the sheet
@@ -99,4 +99,21 @@ class GoogleSheetTool:
             range=range_name,
             body=data,
             valueInputOption="RAW",  # "RAW" or "USER_ENTERED"
+        ).execute()
+
+    def delete_sheet_values(
+        self: Self,
+        sheet_id: str,
+        range_name: str,
+    ):
+        """Clear Google Sheet Range values
+
+        Args:
+            sheet_id: ID of the sheet
+            range_name: Logical range within a sheet. Example: A1, A1:A4, Sheet1!A1:E4, 'Sheet 2'!A1:E4.
+        """
+        # Ref: https://googleapis.github.io/google-api-python-client/docs/dyn/sheets_v4.spreadsheets.values.html#clear
+        self.service.values().clear(
+            spreadsheetId=sheet_id,
+            range=range_name,
         ).execute()
