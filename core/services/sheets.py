@@ -7,9 +7,9 @@ from googleapiclient.discovery import Resource, build
 from auth.google import auth_google_installed_app_flow
 
 
-class GoogleSheetTool:
+class GoogleSheetService:
     """
-    Google Sheet Tool
+    Google Sheet Service
 
     References:
         API Docs: https://developers.google.com/workspace/sheets/api/quickstart/python
@@ -38,7 +38,7 @@ class GoogleSheetTool:
             Spreadsheet ID or None if the url is invalid
 
         Examples:
-            >>> GoogleSheetTool.get_sheet_id_from_url("https://docs.google.com/spreadsheets/d/1l6tE-VfONOKlHoOsGops7pW_GBca1Yzj5wsTHpiqDwg/edit?gid=1623561206#gid=1623561206")
+            >>> GoogleSheetService.get_sheet_id_from_url("https://docs.google.com/spreadsheets/d/1l6tE-VfONOKlHoOsGops7pW_GBca1Yzj5wsTHpiqDwg/edit?gid=1623561206#gid=1623561206")
             1l6tE-VfONOKlHoOsGops7pW_GBca1Yzj5wsTHpiqDwg
         """
         matches = re.findall(r"""/spreadsheets/d/([a-zA-Z0-9-_]+)""", url)
