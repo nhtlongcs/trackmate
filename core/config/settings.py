@@ -16,9 +16,5 @@ class Settings(BaseSettings):
     # Bot
     TELEGRAM_BOT_TOKEN: str = ""
 
-    # PydanticAI
-    LOGFIRE_TOKEN: str = ""
-    PYDANTIC_AI_MODEL: str = ""
-
 
 settings = Settings()
