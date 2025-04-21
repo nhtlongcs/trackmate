@@ -5,18 +5,53 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     filters,
+    ContextTypes,
 )
 
 from config.logger import logger
 from config.settings import settings
+from services.sheets import GoogleSheetService
+
+google_sheet = GoogleSheetService()
 
 
-async def start_callback(update: Update, context: CallbackContext):
-    print("Start callback:", update, context)
+async def start_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Welcome to my awesome bot!")
 
 
-async def message_callback(update: Update, context: CallbackContext):
+async def sheet_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handling /sheet command
+
+    Examples:
+    >>> /sheet https://docs.google.com/spreadsheets/d/1l6tE-VfONOKlHoOsGops7pW_GBca1Yzj5wsTHpiqDwg
+    >>> /sheet https://docs.google.com/spreadsheets/d/1l6tE-VfONOKlHoOsGops7pW_GBca1Yzj5wsTHpiqDwg/edit?gid=1623561206#gid=1623561206
+    """
+    logger.info("Sheet callback: %s", update)
+    splits = list(filter(lambda x: x, update.message.text.split(" ")))
+    if len(splits) != 2:
+        await update.message.reply_markdown_v2("""
+*Invalid command usage*
+                                               
+*Usage:*
+```                              
+/sheet <google_sheet_url>
+```
+""")
+        return
+
+    url = splits[1].strip()
+    sheet_id = google_sheet.get_sheet_id_from_url(url)
+    if sheet_id is None:
+        await update.message.reply_markdown_v2("""*Invalid sheet url*""")
+        return
+
+    file_name = google_sheet.read_sheet_filename(sheet_id)
+    await update.message.reply_markdown_v2(
+        f"""Configured bot to use spreadsheet: *{file_name}*"""
+    )
+
+
+async def message_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     logger.debug(
         "%s", update
     )  # Need to config loglevel in config.logger to logging.DEBUG
@@ -59,6 +94,7 @@ def create_bot():
     logger.info("Creating bot")
     bot = ApplicationBuilder().token(settings.TELEGRAM_BOT_TOKEN).build()
     bot.add_handler(CommandHandler("start", start_callback))
+    bot.add_handler(CommandHandler("sheet", sheet_callback))
     bot.add_handler(MessageHandler(~filters.COMMAND, message_callback))
     return bot
 
