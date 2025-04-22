@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     # Globals
     CACHE_DIR: str = ".cache"
+    DATA_DIR: str = "data"
 
     # Google
     GOOGLE_APPLICATION_CREDENTIALS: str = ""

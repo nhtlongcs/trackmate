@@ -1,76 +1,18 @@
-try:
-    import pretty_errors  # noqa
-except ImportError:
-    pass
+import datetime
 
 import duckdb
-from pathlib import Path
 
-from schema import (
-    SQL_USER_SCHEMA,
-    SQL_FUND_SCHEMA,
-    SQL_CATEGORY_SCHEMA,
-    SQL_TRANSACTION_SCHEMA,
-)
+from db.utils import init_blank_db, safe_execute
 
-
-# write safe excute, add created_at, updated_at, by
-def safe_execute(conn, command, params=None):
-    cursor = conn.cursor()
-    try:
-        # created_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        # updated_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        # by = "system"
-        # TODO: Insert created_at, updated_at, by into command
-        cursor.execute(command, params)
-        conn.commit()
-    except Exception as e:
-        raise e
-
-
-def display_table(db_path, table_name):
-    from tabulate import tabulate
-
-    conn = duckdb.connect(str(db_path))
-    cursor = conn.cursor()
-    headers = cursor.execute(
-        f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'"
-    ).fetchall()
-    headers = [header[0] for header in headers]
-    cursor.execute(f"SELECT * FROM {table_name} LIMIT 3")
-    print(tabulate(cursor.fetchall(), headers=headers, tablefmt="fancy_grid"))
-    conn.close()
-
-
-def display_db(db_path):
-    display_table(db_path, "user")
-    display_table(db_path, "fund")
-    display_table(db_path, "category")
-    display_table(db_path, "transaction")
-
-def init_blank_db(db_path):
-    conn = duckdb.connect(str(db_path))
-    cursor = conn.cursor()
-    # Create database tables
-    cursor.execute(SQL_USER_SCHEMA)
-    cursor.execute(SQL_FUND_SCHEMA)
-    cursor.execute(SQL_CATEGORY_SCHEMA)
-    cursor.execute(SQL_TRANSACTION_SCHEMA)
-    conn.close()
 
 def init_test_db(db_path):
-    import datetime
-
     conn = duckdb.connect(str(db_path))
     cursor = conn.cursor()
 
     # Create database tables
-    cursor.execute(SQL_USER_SCHEMA)
-    cursor.execute(SQL_FUND_SCHEMA)
-    cursor.execute(SQL_CATEGORY_SCHEMA)
-    cursor.execute(SQL_TRANSACTION_SCHEMA)
-    users = [("nhtlong", "Long"), ("vinhloiit", "Vinh Loi"), ("tester", "System")]
+    init_blank_db(db_path)
 
+    users = [("nhtlong", "Long"), ("vinhloiit", "Vinh Loi"), ("tester", "System")]
     # Insert users
     test_user = "tester"
     created_at = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -138,12 +80,3 @@ def init_test_db(db_path):
             (transaction_id,) + transaction + (transaction_id,),
         )
     conn.close()
-
-def test():
-    __DB_PATH = Path(__file__).parent / "trackmate.duckdb"
-    init_test_db(__DB_PATH)
-    print("Database initialized at", __DB_PATH)
-    display_db(__DB_PATH)
-
-if __name__ == "__main__":
-    test()
