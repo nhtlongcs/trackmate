@@ -4,4 +4,3 @@
 .env
 .cache/
 credentials.json
-data/

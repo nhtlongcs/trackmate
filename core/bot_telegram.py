@@ -1,27 +1,22 @@
-from agno.run.response import RunResponse
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
+    CallbackContext,
     CommandHandler,
-    ContextTypes,
     MessageHandler,
     filters,
 )
 
-from agents.chat import create_agent
 from config.logger import logger
 from config.settings import settings
 
-# NOTE: In telegram, we cannot have multiple chat sessions natively
-# Therefore, we need to set to only 1 session and will consider workarounds.
-agent = create_agent(session="telegram")
 
-
-async def start_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start_callback(update: Update, context: CallbackContext):
+    print("Start callback:", update, context)
     await update.message.reply_text("Welcome to my awesome bot!")
 
 
-async def message_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def message_callback(update: Update, context: CallbackContext):
     logger.debug(
         "%s", update
     )  # Need to config loglevel in config.logger to logging.DEBUG
@@ -35,13 +30,6 @@ async def message_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "%s wrote: %s",
         update.message.from_user.first_name,
         update.message.text,
-    )
-
-    user_id = str(update.message.from_user.id)
-    response: RunResponse = await agent.arun(message=update.message.text, user_id=user_id)
-    await context.bot.send_message(
-        update.message.chat_id,
-        response.content,
     )
 
     # if update.message.photo:
