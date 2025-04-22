@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     # Globals
     CACHE_DIR: str = ".cache"
+    DATA_DIR: str = "data"
 
     # Google
     GOOGLE_APPLICATION_CREDENTIALS: str = ""
@@ -15,10 +16,6 @@ class Settings(BaseSettings):
 
     # Bot
     TELEGRAM_BOT_TOKEN: str = ""
-
-    # PydanticAI
-    LOGFIRE_TOKEN: str = ""
-    PYDANTIC_AI_MODEL: str = ""
 
 
 settings = Settings()
