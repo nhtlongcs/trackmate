@@ -36,6 +36,16 @@ def display_table(db_path, table_name):
     conn.close()
 
 
+
+def display_table_conn(conn, table_name):
+    cursor = conn.cursor()
+    headers = cursor.execute(
+        f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{table_name}'"
+    ).fetchall()
+    headers = [header[0] for header in headers]
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 3")
+    print(tabulate(cursor.fetchall(), headers=headers, tablefmt="fancy_grid"))
+
 def display_db(db_path):
     display_table(db_path, "user")
     display_table(db_path, "fund")

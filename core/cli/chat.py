@@ -9,7 +9,7 @@ from rich.json import JSON
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from agents.chat import create_agent
+from agents.chat import create_agent_v5 as create_agent
 from auth.google import auth_google_installed_app_flow
 
 console = Console()

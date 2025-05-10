@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field, StringConstraints
 
 SQL_USER_SCHEMA = """
 CREATE TABLE IF NOT EXISTS user (
-    username TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     note TEXT,
 )
@@ -13,11 +13,11 @@ SQL_FUND_SCHEMA = """
 CREATE TABLE IF NOT EXISTS fund (
     id INTEGER PRIMARY KEY,
     fund_name TEXT NOT NULL UNIQUE,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    by TEXT NOT NULL,
+    created_at TEXT,
+    updated_at TEXT,
+    amount REAL NOT NULL,
+    currency TEXT NOT NULL,
     note TEXT,
-    FOREIGN KEY(by) REFERENCES user(username)
 )
 """
 SQL_CATEGORY_SCHEMA = """
@@ -25,12 +25,10 @@ CREATE TABLE IF NOT EXISTS category (
     id INTEGER PRIMARY KEY,
     category_name TEXT NOT NULL UNIQUE,
     fund_id INTEGER NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    by TEXT NOT NULL,
+    created_at TEXT,
+    updated_at TEXT,
     note TEXT,
     FOREIGN KEY(fund_id) REFERENCES fund(id),
-    FOREIGN KEY(by) REFERENCES user(username)
 )
 """
 
@@ -42,13 +40,13 @@ CREATE TABLE IF NOT EXISTS transaction (
     currency TEXT NOT NULL,
     fund_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL,
-    by TEXT NOT NULL,
+    created_at TEXT,
+    updated_at TEXT,
+    by INTEGER NOT NULL,
     note TEXT,
     FOREIGN KEY(fund_id) REFERENCES fund(id),
     FOREIGN KEY(category_id) REFERENCES category(id),
-    FOREIGN KEY(by) REFERENCES user(username)
+    FOREIGN KEY(by) REFERENCES user(id)
 )
 """
 
