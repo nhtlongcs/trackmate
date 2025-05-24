@@ -22,7 +22,7 @@ import {
 } from "recharts";
 import { X } from "lucide-react";
 import { CategoryValue, MonthlyCategoryTrend } from "@/types";
-import { getCategoryIcon, COLORS } from "@/lib/utils";
+import { getCategoryIcon, COLORS } from "@/lib/design";
 
 interface CategorySpendingProps {
   spendingByCategory: CategoryValue[];

@@ -1,27 +1,20 @@
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { DataProvider } from "./context/DataContext"
-
-const inter = Inter({ subsets: ["latin"] })
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TrackMate - Financial Dashboard",
-  description: "Track your finances with ease",
-}
+  title: "v0 App",
+  description: "Created with v0",
+  generator: "v0.dev",
+};
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <DataProvider>
-          {children}
-        </DataProvider>
-      </body>
+      <body>{children}</body>
     </html>
-  )
+  );
 }
