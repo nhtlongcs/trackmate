@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { SpendingProjectionData, MonthComparisonData } from "@/app/types";
+import { SpendingProjectionData, MonthComparisonData } from "@/types";
 
 interface SpendingAnalysisProps {
   monthComparison: MonthComparisonData;

@@ -18,7 +18,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { MonthlyTrend } from "@/app/types";
+import { MonthlyTrend } from "@/types";
 
 interface IncomeExpenseTrendProps {
   monthlyFinancialTrend: MonthlyTrend[];

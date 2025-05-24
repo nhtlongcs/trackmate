@@ -21,8 +21,8 @@ import {
   Line,
 } from "recharts";
 import { X } from "lucide-react";
-import { CategoryValue, MonthlyCategoryTrend } from "@/app/types";
-import { getCategoryIcon, COLORS } from "@/app/lib/utils";
+import { CategoryValue, MonthlyCategoryTrend } from "@/types";
+import { getCategoryIcon, COLORS } from "@/lib/utils";
 
 interface CategorySpendingProps {
   spendingByCategory: CategoryValue[];

@@ -9,7 +9,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react";
-import { FinancialMetrics, defaultFinancialMetrics } from "@/app/types";
+import { FinancialMetrics, defaultFinancialMetrics } from "@/types";
 
 interface FinancialOverviewProps {
   metrics: FinancialMetrics;

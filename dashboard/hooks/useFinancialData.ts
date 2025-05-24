@@ -3,18 +3,18 @@ import {
   Transaction, User, Fund, Category, EnrichedTransaction,
   FinancialMetrics, SpendingProjectionData, MonthComparisonData,
   CategoryValue, MonthlyTrend, MonthlyCategoryTrend
-} from "@/app/types";
+} from "@/types";
 import {
     startOfYear, startOfMonth, endOfMonth, endOfYear, isWithinInterval,
     differenceInDays, subMonths, format // Added format for monthlyFinancialTrend
 } from "date-fns";
-import { parseCSV } from "@/app/lib/utils";
+import { parseCSV } from "@/lib/utils";
 
 // --- sample data ---
-import { generateSampleTransactions } from "@/app/samples/transactions";
-import { sampleUsers } from "@/app/samples/users";
-import { sampleFunds } from "@/app/samples/funds";
-import { sampleCategories } from "@/app/samples/categories";
+import { generateSampleTransactions } from "@/samples/transactions";
+import { sampleUsers } from "@/samples/users";
+import { sampleFunds } from "@/samples/funds";
+import { sampleCategories } from "@/samples/categories";
 // --- sample data ---
 
 export const useFinancialData = () => {

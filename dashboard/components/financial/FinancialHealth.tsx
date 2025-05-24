@@ -7,7 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { FinancialMetrics, defaultFinancialMetrics } from "@/app/types";
+import { FinancialMetrics, defaultFinancialMetrics } from "@/types";
 
 interface FinancialHealthProps {
   metrics: FinancialMetrics;

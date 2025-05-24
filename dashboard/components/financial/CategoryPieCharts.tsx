@@ -8,8 +8,8 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { CategoryValue } from "@/app/types";
-import { COLORS, INCOME_COLORS } from "@/app/lib/utils";
+import { CategoryValue } from "@/types";
+import { COLORS, INCOME_COLORS } from "@/lib/utils";
 
 interface CategoryPieChartsProps {
   spendingByCategory: CategoryValue[];

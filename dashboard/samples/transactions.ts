@@ -1,5 +1,5 @@
 
-import { Transaction } from "@/app/types";
+import { Transaction } from "@/types";
 import { sampleCategories } from "./categories";
 import { sampleFunds } from "./funds";
 import { sampleUsers } from "./users";

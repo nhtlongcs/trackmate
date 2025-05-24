@@ -1,7 +1,7 @@
 // src/app/page.tsx
 "use client";
 import React, { useState } from "react"; // Add useState for Calendar Popover
-import { useFinancialData } from "@/app/hooks/useFinancialData";
+import { useFinancialData } from "@/hooks/useFinancialData";
 import {
   Card,
   CardContent,
@@ -27,31 +27,21 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CalendarIcon, Upload, Search, AlertCircle } from "lucide-react";
 
-import { FinancialOverview } from "@/app/components/financial/FinancialOverview";
-import { SpendingAnalysis } from "@/app/components/financial/SpendingAnalysis";
-import { CategorySpending } from "@/app/components/financial/CategorySpending";
-import { IncomeExpenseTrend } from "@/app/components/financial/IncomeExpenseTrend";
-import { CategoryPieCharts } from "@/app/components/financial/CategoryPieCharts";
-import { FinancialHealth } from "@/app/components/financial/FinancialHealth";
-import { TransactionTable } from "@/app/components/financial/TransactionTable";
+import { FinancialOverview } from "@/components/financial/FinancialOverview";
+import { SpendingAnalysis } from "@/components/financial/SpendingAnalysis";
+import { CategorySpending } from "@/components/financial/CategorySpending";
+import { IncomeExpenseTrend } from "@/components/financial/IncomeExpenseTrend";
+import { CategoryPieCharts } from "@/components/financial/CategoryPieCharts";
+import { FinancialHealth } from "@/components/financial/FinancialHealth";
+import { TransactionTable } from "@/components/financial/TransactionTable";
 
-// --- sample data ---
-import { generateSampleTransactions } from "@/app/samples/transactions";
-import { sampleUsers } from "@/app/samples/users";
-import { sampleFunds } from "@/app/samples/funds";
-import { sampleCategories } from "@/app/samples/categories";
-// --- sample data ---
-import { Category, Fund, Transaction, User } from "@/app/types";
+import { Category, Fund, Transaction, User } from "@/types";
 
 export default function FinancialDashboard() {
   const {
     transactions,
     users,
     funds,
-    // selectedFund,
-    // setSelectedFund,
-    // selectedUser,
-    // setSelectedUser,
     dateRange,
     setDateRange,
     searchTerm,
@@ -70,23 +60,6 @@ export default function FinancialDashboard() {
     selectedCategoryTrend,
     handleCategoryClick,
   } = useFinancialData();
-  // --- sample data ---
-  // const [transactions, setTransactions] = useState<Transaction[]>(
-  //   generateSampleTransactions()
-  // );
-  // const [users, setUsers] = useState<User[]>(sampleUsers);
-  // const [funds, setFunds] = useState<Fund[]>(sampleFunds);
-  // const [categories, setCategories] = useState<Category[]>(sampleCategories);
-  // const [dateRange, setDateRange] = useState<{
-  //   from: Date;
-  //   to: Date;
-  //   preset: string;
-  // }>({
-  //   from: new Date(2025, 4, 1), // May 1, 2025
-  //   to: new Date(2025, 4, 31), // May 31, 2025
-  //   preset: "month",
-  // });
-  // --- sample data ---
 
   // --- default state ---
   const [selectedFund, setSelectedFund] = useState<string>("all");
