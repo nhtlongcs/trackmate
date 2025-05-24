@@ -35,21 +35,29 @@ import { CategoryPieCharts } from "@/app/components/financial/CategoryPieCharts"
 import { FinancialHealth } from "@/app/components/financial/FinancialHealth";
 import { TransactionTable } from "@/app/components/financial/TransactionTable";
 
+// --- sample data ---
+import { generateSampleTransactions } from "@/app/samples/transactions";
+import { sampleUsers } from "@/app/samples/users";
+import { sampleFunds } from "@/app/samples/funds";
+import { sampleCategories } from "@/app/samples/categories";
+// --- sample data ---
+import { Category, Fund, Transaction, User } from "@/app/types";
+
 export default function FinancialDashboard() {
   const {
     transactions,
     users,
     funds,
-    selectedFund,
-    setSelectedFund,
-    selectedUser,
-    setSelectedUser,
-    searchTerm,
-    setSearchTerm,
+    // selectedFund,
+    // setSelectedFund,
+    // selectedUser,
+    // setSelectedUser,
     dateRange,
     setDateRange,
-    setDateRangePreset,
+    searchTerm,
+    setSearchTerm,
     dataErrors,
+    setDateRangePreset,
     handleFileUpload,
     financialMetrics,
     spendingProjection,
@@ -62,8 +70,29 @@ export default function FinancialDashboard() {
     selectedCategoryTrend,
     handleCategoryClick,
   } = useFinancialData();
+  // --- sample data ---
+  // const [transactions, setTransactions] = useState<Transaction[]>(
+  //   generateSampleTransactions()
+  // );
+  // const [users, setUsers] = useState<User[]>(sampleUsers);
+  // const [funds, setFunds] = useState<Fund[]>(sampleFunds);
+  // const [categories, setCategories] = useState<Category[]>(sampleCategories);
+  // const [dateRange, setDateRange] = useState<{
+  //   from: Date;
+  //   to: Date;
+  //   preset: string;
+  // }>({
+  //   from: new Date(2025, 4, 1), // May 1, 2025
+  //   to: new Date(2025, 4, 31), // May 31, 2025
+  //   preset: "month",
+  // });
+  // --- sample data ---
 
+  // --- default state ---
+  const [selectedFund, setSelectedFund] = useState<string>("all");
+  const [selectedUser, setSelectedUser] = useState<string>("all");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false); // Local state for popover
+  // --- default state ---
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

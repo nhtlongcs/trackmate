@@ -1,29 +1,15 @@
-// src/lib/data.ts
-import { Transaction, User, Fund, Category } from "@/app/types";
+
+import { Transaction } from "@/app/types";
+import { sampleCategories } from "./categories";
+import { sampleFunds } from "./funds";
+import { sampleUsers } from "./users";
 
 export const sampleTransactions: Transaction[] = [
   { id: 1, datetime: "2024-10-16T14:45:25.690048", amount: -32.53, currency: "EUR", fund_id: 4, category_id: 8, created_at: "2024-10-16T15:45:25.690048", updated_at: "2024-10-16T15:56:25.690048", by: "mark.crawford", note: "Tuition payment", type: "expense" },
-  // ... (keep the rest of the sampleTransactions array)
-];
-
-export const sampleUsers: User[] = [
-  { username: "madison.delacruz", name: "Madison Delacruz", note: "By range property evening community discussion mention." },
-  { username: "mark.crawford", name: "Mark Crawford", note: "Reason listen rise home bill perhaps environmental special." },
-  { username: "edward.cardenas", name: "Edward Cardenas", note: "We because here." },
-];
-
-export const sampleFunds: Fund[] = [
-  { id: 1, fund_name: "Activity Fund 1", created_at: "2023-07-18T21:49:59.062028", updated_at: "2023-12-03T21:49:59.062028", by: "madison.delacruz", note: "Model account dog treat." },
-  // ... (keep the rest of the sampleFunds array)
-];
-
-export const sampleCategories: Category[] = [
-  // ... (keep the rest of the sampleCategories array)
 ];
 
 
 export const generateSampleTransactions = (): Transaction[] => {
-  // ... (keep the entire generateSampleTransactions function here)
   const transactions: Transaction[] = [...sampleTransactions];
   const expenseCategories = sampleCategories
     .filter((c) => c.type === "expense")
