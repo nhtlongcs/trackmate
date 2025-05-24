@@ -275,6 +275,7 @@ export default function FinancialDashboard() {
             monthlyTrendWithCategories={monthlyTrendWithCategories}
             selectedCategory={selectedCategory}
             selectedCategoryTrend={selectedCategoryTrend}
+            dateRange={dateRange}
             onCategoryClick={handleCategoryClick}
           />
 

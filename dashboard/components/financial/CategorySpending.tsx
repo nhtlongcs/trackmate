@@ -21,7 +21,7 @@ import {
   Line,
 } from "recharts";
 import { X } from "lucide-react";
-import { CategoryValue, MonthlyCategoryTrend } from "@/types";
+import { CategoryValue, DateRange, MonthlyCategoryTrend } from "@/types";
 import { getCategoryIcon, COLORS } from "@/lib/design";
 
 interface CategorySpendingProps {
@@ -29,6 +29,7 @@ interface CategorySpendingProps {
   monthlyTrendWithCategories: MonthlyCategoryTrend[];
   selectedCategory: string | null;
   selectedCategoryTrend: { month: string; amount: number }[];
+  dateRange: DateRange;
   onCategoryClick: (categoryName: string) => void;
 }
 
@@ -37,6 +38,7 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
   monthlyTrendWithCategories,
   selectedCategory,
   selectedCategoryTrend,
+  dateRange,
   onCategoryClick,
 }) => {
   return (
@@ -59,7 +61,7 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onCategoryClick(selectedCategory)} // Effectively deselects
+              onClick={() => onCategoryClick(selectedCategory)}
               className="flex items-center space-x-2"
             >
               <X className="h-4 w-4" />
@@ -94,6 +96,7 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
             })}
           </div>
         )}
+
         <ResponsiveContainer width="100%" height={400}>
           {selectedCategory ? (
             <BarChart
@@ -102,10 +105,16 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis
-                dataKey="month"
+                dataKey={dateRange.preset === "month" ? "day" : "month"}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: "#666" }}
+                label={{
+                  value:
+                    dateRange.preset === "month" ? "Day of Month" : "Month",
+                  position: "insideBottom",
+                  offset: -5,
+                }}
               />
               <YAxis
                 axisLine={false}
@@ -118,6 +127,9 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
                   `€${Number(value).toFixed(2)}`,
                   selectedCategory,
                 ]}
+                labelFormatter={(label) =>
+                  dateRange.preset === "month" ? `Day ${label}` : label
+                }
                 contentStyle={{
                   backgroundColor: "white",
                   border: "1px solid #e5e7eb",
@@ -132,7 +144,7 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
                     spendingByCategory.findIndex(
                       (c) => c.name === selectedCategory
                     ) % COLORS.length
-                  ] || COLORS[0] // Fallback color
+                  ]
                 }
                 radius={[4, 4, 0, 0]}
               />
@@ -144,10 +156,16 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis
-                dataKey="month"
+                dataKey={dateRange.preset === "month" ? "day" : "month"}
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: "#666" }}
+                label={{
+                  value:
+                    dateRange.preset === "month" ? "Day of Month" : "Month",
+                  position: "insideBottom",
+                  offset: -5,
+                }}
               />
               <YAxis
                 axisLine={false}
@@ -160,6 +178,9 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
                   `€${Number(value).toFixed(2)}`,
                   name,
                 ]}
+                labelFormatter={(label) =>
+                  dateRange.preset === "month" ? `Day ${label}` : label
+                }
                 contentStyle={{
                   backgroundColor: "white",
                   border: "1px solid #e5e7eb",
@@ -168,6 +189,7 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
                 }}
               />
               <Legend />
+
               {/* Stacked bars for each category */}
               {spendingByCategory.map((category, index) => (
                 <Bar
@@ -182,6 +204,7 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
                   }
                 />
               ))}
+
               {/* Budget threshold line */}
               <Line
                 type="monotone"
@@ -190,7 +213,6 @@ export const CategorySpending: React.FC<CategorySpendingProps> = ({
                 strokeWidth={2}
                 strokeDasharray="8 8"
                 dot={false}
-                name="Budget Threshold"
               />
             </BarChart>
           )}

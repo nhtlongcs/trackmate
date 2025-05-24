@@ -50,7 +50,7 @@ export const useFinancialData = () => {
     const spendingByCategory = useSpendingByCategory(enrichedTransactions);
     const incomeByCategory = useIncomeByCategory(enrichedTransactions);
     const monthlyFinancialTrend = useMonthlyFinancialTrend(enrichedTransactions);
-    const monthlyTrendWithCategories = useMonthlyTrendWithCategories(enrichedTransactions, categories);
+    const monthlyTrendWithCategories = useMonthlyTrendWithCategories(enrichedTransactions, categories, dateRange);
 
     // 5. Category Selection & Trend
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
