@@ -57,6 +57,7 @@ export default function FinancialDashboard() {
     searchTerm,
     setSearchTerm,
     dataErrors,
+    setDataErrors,
     setDateRangePreset,
     handleFileUpload,
     financialMetrics,
@@ -75,70 +76,30 @@ export default function FinancialDashboard() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
 
   const handleMultipleFileUpload = async (files: Record<string, File>) => {
     try {
       setIsUploading(true);
-      // Here you would typically upload each file to your backend
-      // For now, we'll just log them and call the existing handleFileUpload with the transactions file
-      console.log("Uploading files:", files);
+      const result = await handleFileUpload(files);
 
-      if (files.transactions) {
-        // Create a proper event-like object that matches what handleFileUpload expects
-        const fileList = {
-          0: files.transactions,
-          length: 1,
-          item: (index: number) => (index === 0 ? files.transactions : null),
-          [Symbol.iterator]: function* () {
-            yield files.transactions;
-          },
-        } as unknown as FileList;
-
-        // Create a proper synthetic event with all required properties
-        const event = {
-          target: {
-            files: fileList,
-            value: "",
-            name: "file-upload",
-            type: "file",
-          },
-          currentTarget: {
-            files: fileList,
-            value: "",
-            name: "file-upload",
-            type: "file",
-          },
-          preventDefault: () => {},
-          stopPropagation: () => {},
-          nativeEvent: new Event("change"),
-          persist: () => {},
-          bubbles: true,
-          cancelable: true,
-          defaultPrevented: false,
-          eventPhase: 0,
-          isTrusted: true,
-          timeStamp: Date.now(),
-          type: "change",
-          isDefaultPrevented: () => false,
-          isPropagationStopped: () => false,
-        } as unknown as React.ChangeEvent<HTMLInputElement>;
-
-        await handleFileUpload(event);
+      if (result && !result.success) {
+        console.error("Upload failed:", result.errors);
+      } else {
+        // Success - clear any previous errors
+        setDataErrors([]);
       }
 
-      // Close the modal after successful upload
-      setIsUploadModalOpen(false);
-      setFiles([]);
+      return result || { success: false, errors: ["Unknown error occurred"] };
     } catch (error) {
       console.error("Error uploading files:", error);
+      return { success: false, errors: ["Failed to upload files"] };
     } finally {
       setIsUploading(false);
+      // Always close the modal after upload attempt, regardless of success/failure
+      setIsUploadModalOpen(false);
     }
   };
-
-  const [files, setFiles] = useState<File[]>([]);
-  // This state is used to track files for the upload modal
-  const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -337,10 +298,15 @@ export default function FinancialDashboard() {
       <CsvUploadModal
         isOpen={isUploadModalOpen}
         onClose={() => {
-          setUploadedFiles({});
           setIsUploadModalOpen(false);
         }}
-        onUpload={handleMultipleFileUpload}
+        onUpload={async (files) => {
+          const result = await handleMultipleFileUpload(files);
+          if (result?.success) {
+            setIsUploadModalOpen(false);
+          }
+          return result || { success: false, errors: ["Upload failed"] };
+        }}
         isLoading={isUploading}
       />
     </div>
