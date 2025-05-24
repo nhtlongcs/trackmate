@@ -1,4 +1,4 @@
-import { Category } from "@/app/types";
+import { Category } from "@/types";
 
 export const sampleCategories: Category[] = [
     // Expense categories

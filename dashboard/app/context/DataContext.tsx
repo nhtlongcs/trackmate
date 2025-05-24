@@ -83,7 +83,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [usersData, transactionsData, fundsData, categoriesData] =
         await Promise.all([
           loadCSVData<User>("users.csv"),
@@ -93,7 +93,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ]);
 
       // Parse numeric fields
-      const parsedTransactions = transactionsData.map(tx => ({
+      const parsedTransactions = transactionsData.map((tx) => ({
         ...tx,
         amount: parseFloat(tx.amount as unknown as string) || 0,
       }));
@@ -104,77 +104,99 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setCategories(categoriesData);
     } catch (err) {
       console.error("Error loading data:", err);
-      setError("Failed to load data. Please check your connection and try again.");
+      setError(
+        "Failed to load data. Please check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const uploadCSV = useCallback(async (
-    file: File,
-    type: "users" | "transactions" | "funds" | "categories"
-  ) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const uploadCSV = useCallback(
+    async (
+      file: File,
+      type: "users" | "transactions" | "funds" | "categories"
+    ) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Parse the CSV file
-      const data = await parseCSV<any>(file);
-      
-      // Type-specific processing
-      switch (type) {
-        case "users":
-          setUsers(data);
-          break;
-        case "transactions":
-          // Ensure numeric fields are properly typed
-          const parsedTransactions = data.map((tx: any) => ({
-            ...tx,
-            amount: parseFloat(tx.amount) || 0,
-          }));
-          setTransactions(parsedTransactions);
-          break;
-        case "funds":
-          setFunds(data);
-          break;
-        case "categories":
-          setCategories(data);
-          break;
+        // Parse the CSV file
+        const data = await parseCSV<any>(file);
+
+        // Type-specific processing
+        switch (type) {
+          case "users":
+            setUsers(data);
+            break;
+          case "transactions":
+            // Ensure numeric fields are properly typed
+            const parsedTransactions = data.map((tx: any) => ({
+              ...tx,
+              amount: parseFloat(tx.amount) || 0,
+            }));
+            setTransactions(parsedTransactions);
+            break;
+          case "funds":
+            setFunds(data);
+            break;
+          case "categories":
+            setCategories(data);
+            break;
+        }
+
+        // In a real app, you would save this to the server here
+        console.log(`Uploaded ${type} data:`, data);
+
+        return true;
+      } catch (err) {
+        console.error(`Error uploading ${type} CSV:`, err);
+        setError(
+          `Failed to process ${type} data. Please check the file format.`
+        );
+        return false;
+      } finally {
+        setLoading(false);
       }
-
-      // In a real app, you would save this to the server here
-      console.log(`Uploaded ${type} data:`, data);
-      
-      return true;
-    } catch (err) {
-      console.error(`Error uploading ${type} CSV:`, err);
-      setError(`Failed to process ${type} data. Please check the file format.`);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   // Helper functions
-  const getCategoriesByFund = useCallback((fundId: string): Category[] => {
-    return categories.filter(cat => cat.fund_id === fundId);
-  }, [categories]);
+  const getCategoriesByFund = useCallback(
+    (fundId: string): Category[] => {
+      return categories.filter((cat) => cat.fund_id === fundId);
+    },
+    [categories]
+  );
 
-  const getCategoriesByType = useCallback((type: "income" | "expense"): Category[] => {
-    return categories.filter(cat => cat.type === type);
-  }, [categories]);
+  const getCategoriesByType = useCallback(
+    (type: "income" | "expense"): Category[] => {
+      return categories.filter((cat) => cat.type === type);
+    },
+    [categories]
+  );
 
-  const getFundById = useCallback((id: string): Fund | undefined => {
-    return funds.find(fund => fund.id === id);
-  }, [funds]);
+  const getFundById = useCallback(
+    (id: string): Fund | undefined => {
+      return funds.find((fund) => fund.id === id);
+    },
+    [funds]
+  );
 
-  const getCategoryById = useCallback((id: string): Category | undefined => {
-    return categories.find(cat => cat.id === id);
-  }, [categories]);
+  const getCategoryById = useCallback(
+    (id: string): Category | undefined => {
+      return categories.find((cat) => cat.id === id);
+    },
+    [categories]
+  );
 
-  const getUserByUsername = useCallback((username: string): User | undefined => {
-    return users.find(user => user.username === username);
-  }, [users]);
+  const getUserByUsername = useCallback(
+    (username: string): User | undefined => {
+      return users.find((user) => user.username === username);
+    },
+    [users]
+  );
 
   // Load data on mount
   useEffect(() => {

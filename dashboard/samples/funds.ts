@@ -1,4 +1,4 @@
-import { Fund } from "@/app/types";
+import { Fund } from "@/types";
 
 export const sampleFunds: Fund[] = [
     {

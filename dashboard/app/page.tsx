@@ -42,6 +42,10 @@ export default function FinancialDashboard() {
     transactions,
     users,
     funds,
+    selectedFund,
+    setSelectedFund,
+    selectedUser,
+    setSelectedUser,
     dateRange,
     setDateRange,
     searchTerm,
@@ -62,10 +66,7 @@ export default function FinancialDashboard() {
   } = useFinancialData();
 
   // --- default state ---
-  const [selectedFund, setSelectedFund] = useState<string>("all");
-  const [selectedUser, setSelectedUser] = useState<string>("all");
   const [isCalendarOpen, setIsCalendarOpen] = useState(false); // Local state for popover
-  // --- default state ---
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

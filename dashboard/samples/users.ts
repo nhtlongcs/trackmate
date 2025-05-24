@@ -1,4 +1,4 @@
-import { User } from "@/app/types";
+import { User } from "@/types";
 
 export const sampleUsers: User[] = [
     {
