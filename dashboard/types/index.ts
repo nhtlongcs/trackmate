@@ -122,3 +122,9 @@ export interface MonthlyCategoryTrend {
     budgetThreshold: number;
     [key: string]: any; // Categories will be dynamic keys
 }
+
+export interface DateRange {
+  from: Date;
+  to: Date;
+  preset: string;
+}
