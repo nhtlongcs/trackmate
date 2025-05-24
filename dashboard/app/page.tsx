@@ -25,8 +25,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CalendarIcon, Upload, Search, AlertCircle } from "lucide-react";
-
+import {
+  CalendarIcon,
+  Upload as UploadIcon,
+  Search,
+  AlertCircle,
+  Upload,
+} from "lucide-react";
+import { CsvUploadModal } from "@/components/financial/CsvUploadModal";
 import { FinancialOverview } from "@/components/financial/FinancialOverview";
 import { SpendingAnalysis } from "@/components/financial/SpendingAnalysis";
 import { CategorySpending } from "@/components/financial/CategorySpending";
@@ -65,8 +71,74 @@ export default function FinancialDashboard() {
     handleCategoryClick,
   } = useFinancialData();
 
-  // --- default state ---
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false); // Local state for popover
+  // --- state ---
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleMultipleFileUpload = async (files: Record<string, File>) => {
+    try {
+      setIsUploading(true);
+      // Here you would typically upload each file to your backend
+      // For now, we'll just log them and call the existing handleFileUpload with the transactions file
+      console.log("Uploading files:", files);
+
+      if (files.transactions) {
+        // Create a proper event-like object that matches what handleFileUpload expects
+        const fileList = {
+          0: files.transactions,
+          length: 1,
+          item: (index: number) => (index === 0 ? files.transactions : null),
+          [Symbol.iterator]: function* () {
+            yield files.transactions;
+          },
+        } as unknown as FileList;
+
+        // Create a proper synthetic event with all required properties
+        const event = {
+          target: {
+            files: fileList,
+            value: "",
+            name: "file-upload",
+            type: "file",
+          },
+          currentTarget: {
+            files: fileList,
+            value: "",
+            name: "file-upload",
+            type: "file",
+          },
+          preventDefault: () => {},
+          stopPropagation: () => {},
+          nativeEvent: new Event("change"),
+          persist: () => {},
+          bubbles: true,
+          cancelable: true,
+          defaultPrevented: false,
+          eventPhase: 0,
+          isTrusted: true,
+          timeStamp: Date.now(),
+          type: "change",
+          isDefaultPrevented: () => false,
+          isPropagationStopped: () => false,
+        } as unknown as React.ChangeEvent<HTMLInputElement>;
+
+        await handleFileUpload(event);
+      }
+
+      // Close the modal after successful upload
+      setIsUploadModalOpen(false);
+      setFiles([]);
+    } catch (error) {
+      console.error("Error uploading files:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const [files, setFiles] = useState<File[]>([]);
+  // This state is used to track files for the upload modal
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, File>>({});
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -82,18 +154,14 @@ export default function FinancialDashboard() {
             </p>
           </div>
           <div className="flex flex-col space-y-2">
-            <div className="flex items-center space-x-2">
-              <Upload className="h-4 w-4" />
-              <span className="text-sm font-medium">
-                Upload Transactions CSV
-              </span>
-            </div>
-            <Input
-              type="file"
-              accept=".csv"
-              onChange={(e) => handleFileUpload(e, "transactions")}
-              className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
+            <Button
+              variant="outline"
+              className="bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 border-blue-200"
+              onClick={() => setIsUploadModalOpen(true)}
+            >
+              <UploadIcon className="h-4 w-4 mr-2" />
+              <span>Upload Data</span>
+            </Button>
           </div>
         </div>
 
@@ -264,6 +332,17 @@ export default function FinancialDashboard() {
           />
         </div>
       </div>
+
+      {/* CSV Upload Modal */}
+      <CsvUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => {
+          setUploadedFiles({});
+          setIsUploadModalOpen(false);
+        }}
+        onUpload={handleMultipleFileUpload}
+        isLoading={isUploading}
+      />
     </div>
   );
 }
