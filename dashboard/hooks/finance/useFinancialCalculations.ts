@@ -281,11 +281,10 @@ export const useMonthlyTrendWithCategories = (
     
                 if (!monthlyData[month]) {
                 monthlyData[month] = { month, budgetThreshold }
-                spendingByCategory.forEach((cat) => {
-                    monthlyData[month][cat.name] = 0
+                categories.forEach((cat) => {
+                    monthlyData[month][cat.category_name] = 0
                 })
                 }
-    
                 monthlyData[month][category] = (monthlyData[month][category] || 0) + amount
             })
     
