@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS transaction (
     datetime TEXT NOT NULL,
     amount REAL NOT NULL,
     currency TEXT NOT NULL,
+    vnd_rate REAL NOT NULL DEFAULT 1.0,
     fund_id INTEGER NOT NULL,
     category_id INTEGER NOT NULL,
     created_at TEXT NOT NULL,

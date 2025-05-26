@@ -1,6 +1,13 @@
+import json
+from pathlib import Path
+
 import duckdb
+import pandas as pd
+from agno.tools.googlesheets import GoogleSheetsTools
 from tabulate import tabulate
 
+from config.logger import logger
+from config.settings import settings
 from db.schema import (
     SQL_CATEGORY_SCHEMA,
     SQL_FUND_SCHEMA,
@@ -36,6 +43,11 @@ def display_table(db_path, table_name):
     conn.close()
 
 
+def display_table_conn(conn: duckdb.DuckDBPyConnection, table_name):
+    data = conn.sql(f"SELECT * FROM {table_name} LIMIT 3")
+    print(data)
+
+
 def display_db(db_path):
     display_table(db_path, "user")
     display_table(db_path, "fund")
@@ -52,3 +64,133 @@ def init_blank_db(db_path):
     cursor.execute(SQL_CATEGORY_SCHEMA)
     cursor.execute(SQL_TRANSACTION_SCHEMA)
     conn.close()
+
+
+def _create_db_from_sheet(
+    conn: duckdb.DuckDBPyConnection,
+    data: dict[str, pd.DataFrame],
+):
+    # remove all tables
+    conn.execute("DROP TABLE IF EXISTS transaction")
+    conn.execute("DROP TABLE IF EXISTS category")
+    conn.execute("DROP TABLE IF EXISTS fund")
+    conn.execute("DROP TABLE IF EXISTS user")
+    # Create database tables
+    conn.execute(SQL_USER_SCHEMA)
+    conn.execute(SQL_FUND_SCHEMA)
+    conn.execute(SQL_CATEGORY_SCHEMA)
+    conn.execute(SQL_TRANSACTION_SCHEMA)
+    # Insert data into tables
+    conn.register("v_expenses", data["expenses_df"])
+    conn.register("v_users", data["users_df"])
+    conn.register("v_funds", data["funds_df"])
+    conn.register("v_categories", data["categories_df"])
+    conn.sql(
+        """
+        INSERT INTO user (username, name, note)
+        SELECT username, name, note FROM v_users
+        """
+    )
+    conn.sql(
+        """
+        INSERT INTO fund (id, fund_name, created_at, updated_at, by, note)
+        SELECT id, fund_name, created_at, updated_at, by, note FROM v_funds
+        """
+    )
+    conn.sql(
+        """
+        INSERT INTO category (id, category_name, fund_id, created_at, updated_at, by, note)
+        SELECT id, category_name, fund_id, created_at, updated_at, by, note FROM v_categories
+        """
+    )
+    conn.sql(
+        """
+        INSERT INTO transaction (
+            id,
+            datetime,
+            amount,
+            currency,
+            vnd_rate,
+            fund_id,
+            category_id,
+            created_at,
+            updated_at,
+            by,
+            note
+        )
+        SELECT
+            id,
+            datetime,
+            amount,
+            currency,
+            vnd_rate,
+            fund_id,
+            category_id,
+            created_at,
+            updated_at,
+            by,
+            note
+        FROM v_expenses
+        """
+    )
+    display_table_conn(conn, "user")
+    display_table_conn(conn, "fund")
+    display_table_conn(conn, "category")
+    display_table_conn(conn, "transaction")
+
+    # Unregister as we store all data into local tables
+    conn.unregister("v_expenses")
+    conn.unregister("v_users")
+    conn.unregister("v_funds")
+    conn.unregister("v_categories")
+
+    conn.commit()
+
+
+def read_google_sheet_table(
+    tool: GoogleSheetsTools,
+    spreadsheet_id: str,
+    spreadsheet_range: str,
+) -> pd.DataFrame:
+    table_str = tool.read_sheet(
+        spreadsheet_id=spreadsheet_id,
+        spreadsheet_range=spreadsheet_range,
+    )
+    table = json.loads(table_str)
+    df = pd.DataFrame(table[1:], columns=table[0])
+    return df
+
+
+def sync_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str):
+    # TODO: temporally hardcode due to specific post-processing
+    ranges: dict[str, str] = {
+        "expenses": "Expenses!A:Z",
+        "funds": "Funds!A:Z",
+        "users": "Users!A:Z",
+        "categories": "Categories!A:Z",
+    }
+    googlesheet_tool = GoogleSheetsTools(
+        creds_path=settings.GOOGLE_APPLICATION_CREDENTIALS,
+        token_path=Path(settings.CACHE_DIR) / "token.json",
+        update=True,
+    )
+    logger.info("Loading data from Google Sheets...")
+    expenses_df = read_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["expenses"]
+    )
+    funds_df = read_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["funds"]
+    )
+    users_df = read_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["users"]
+    )
+    categories_df = read_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["categories"]
+    )
+    data = {
+        "expenses_df": expenses_df,
+        "funds_df": funds_df,
+        "users_df": users_df,
+        "categories_df": categories_df,
+    }
+    _create_db_from_sheet(conn, data)
