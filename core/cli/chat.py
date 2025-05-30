@@ -9,7 +9,7 @@ from rich.json import JSON
 from rich.panel import Panel
 from rich.prompt import Prompt
 
-from agents.chat import create_agent
+from agents.chat import create_agent_v2 as create_agent
 from auth.google import auth_google_installed_app_flow
 
 console = Console()
@@ -61,7 +61,8 @@ def main():
     args = parse_args()
     user = args.get("user", None) or None
     session = args.get("session", None) or None
-    agent = create_agent(user, session)
+    debug = args.get("debug", False)
+    agent = create_agent(user, session, debug)
 
     print("Chat with an Agent. Enter exit/quit/bye to stop chatting")
     exit_on = ["exit", "quit", "bye"]
