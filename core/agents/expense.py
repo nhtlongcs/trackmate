@@ -12,8 +12,8 @@ from rich.prompt import Prompt
 from config.settings import settings
 from db.schema import (
     SQL_CATEGORY_SCHEMA,
-    SQL_FUND_SCHEMA,
     SQL_TRANSACTION_SCHEMA,
+    SQL_WALLET_SCHEMA,
 )
 
 
@@ -59,11 +59,11 @@ def create_agent_v2(db_path: str, username: str):
         SELECT
             category.id AS category_id,
             category.category_name,
-            fund.id AS fund_id,
-            fund.fund_name
+            wallet.id AS wallet_id,
+            wallet.wallet_name
         FROM
-            fund
-            LEFT OUTER JOIN category ON (fund.id = category.fund_id)
+            wallet
+            LEFT OUTER JOIN category ON (wallet.id = category.wallet_id)
         """
     )
     team = Team(
@@ -83,11 +83,11 @@ def create_agent_v2(db_path: str, username: str):
         
         Database schema:
 
-        {SQL_FUND_SCHEMA}
+        {SQL_WALLET_SCHEMA}
         {SQL_CATEGORY_SCHEMA}
         {SQL_TRANSACTION_SCHEMA}
         
-        Created Categories/Funds
+        Created Categories/Wallets
         {category_table}
 
         today's date = {date.today()}

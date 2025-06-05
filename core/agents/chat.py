@@ -74,7 +74,7 @@ def create_agent_v2(
 
         {duckdb_tool.describe_table("transaction")}
         {duckdb_tool.describe_table("category")}
-        {duckdb_tool.describe_table("fund")}
+        {duckdb_tool.describe_table("wallet")}
         {duckdb_tool.describe_table("user")}
         """
     )

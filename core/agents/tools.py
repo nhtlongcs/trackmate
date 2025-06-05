@@ -7,7 +7,7 @@ class DataRetrievalTools(Toolkit):
         self._conn = conn
         super().__init__(name="data_retrieval_tool", **kwargs)
         self.register(self.find_category_id_by_name)
-        self.register(self.find_fund_id_by_name)
+        self.register(self.find_wallet_id_by_name)
 
     def find_category_id_by_name(self, category_name: str) -> str:
         """Use this tool to find category's id given a category name
@@ -27,18 +27,18 @@ class DataRetrievalTools(Toolkit):
             force_ascii=False,
         )
 
-    def find_fund_id_by_name(self, fund_name: str) -> str:
-        """Use this tool to find fund's id given a fund name
+    def find_wallet_id_by_name(self, wallet_name: str) -> str:
+        """Use this tool to find wallet's id given a wallet name
 
         Args:
-            fund_name: fund name to find the id
+            wallet_name: wallet name to find the id
 
         Returns:
-            a list of best match fund ids
+            a list of best match wallet ids
         """
         df = self._conn.execute(
-            "SELECT * FROM fund f WHERE LOWER(f.fund_name) = LOWER(?)",
-            [fund_name],
+            "SELECT * FROM wallet f WHERE LOWER(f.wallet_name) = LOWER(?)",
+            [wallet_name],
         ).df()
         return df.to_json(
             orient="records",
