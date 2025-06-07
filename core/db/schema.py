@@ -9,10 +9,12 @@ CREATE TABLE IF NOT EXISTS user (
     note TEXT,
 )
 """
-SQL_FUND_SCHEMA = """
-CREATE TABLE IF NOT EXISTS fund (
+SQL_WALLET_SCHEMA = """
+CREATE TABLE IF NOT EXISTS wallet (
     id INTEGER PRIMARY KEY,
-    fund_name TEXT NOT NULL UNIQUE,
+    wallet_name TEXT NOT NULL UNIQUE,
+    threshold REAL,
+    is_default BOOL NOT NULL DEFAULT FALSE,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     by TEXT NOT NULL,
@@ -24,12 +26,11 @@ SQL_CATEGORY_SCHEMA = """
 CREATE TABLE IF NOT EXISTS category (
     id INTEGER PRIMARY KEY,
     category_name TEXT NOT NULL UNIQUE,
-    fund_id INTEGER NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     by TEXT NOT NULL,
+    is_default BOOL NOT NULL DEFAULT FALSE,
     note TEXT,
-    FOREIGN KEY(fund_id) REFERENCES fund(id),
     FOREIGN KEY(by) REFERENCES user(username)
 )
 """
@@ -41,13 +42,13 @@ CREATE TABLE IF NOT EXISTS transaction (
     amount REAL NOT NULL,
     currency TEXT NOT NULL,
     vnd_rate REAL NOT NULL DEFAULT 1.0,
-    fund_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
+    wallet_id INTEGER NOT NULL,
+    category_id INTEGER,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     by TEXT NOT NULL,
     note TEXT,
-    FOREIGN KEY(fund_id) REFERENCES fund(id),
+    FOREIGN KEY(wallet_id) REFERENCES wallet(id),
     FOREIGN KEY(category_id) REFERENCES category(id),
     FOREIGN KEY(by) REFERENCES user(username)
 )
@@ -72,15 +73,15 @@ class User(BaseModel):
     note: Optional[str] = Field(None, description="Optional note about user")
 
 
-class Fund(BaseModel):
-    id: int = Field(description="Fund ID, primary key")
+class Wallet(BaseModel):
+    id: int = Field(description="Wallet ID, primary key")
     name: Annotated[
         str,
         StringConstraints(
             strip_whitespace=True,
             min_length=1,
         ),
-    ] = Field(description="Fund name, primary key")
+    ] = Field(description="Wallet name, primary key")
     created_at: Annotated[
         str,
         StringConstraints(
@@ -102,7 +103,7 @@ class Fund(BaseModel):
             min_length=1,
         ),
     ] = Field(description="Username of creator (foreign key)")
-    note: Optional[str] = Field(None, description="Optional note about fund")
+    note: Optional[str] = Field(None, description="Optional note about wallet")
 
 
 class Category(BaseModel):
@@ -114,13 +115,13 @@ class Category(BaseModel):
             min_length=1,
         ),
     ] = Field(description="Category name, primary key")
-    fund_name: Annotated[
+    wallet_name: Annotated[
         str,
         StringConstraints(
             strip_whitespace=True,
             min_length=1,
         ),
-    ] = Field(description="Fund name (foreign key)")
+    ] = Field(description="Wallet name (foreign key)")
     created_at: Annotated[
         str,
         StringConstraints(
@@ -163,13 +164,13 @@ class Transaction(BaseModel):
             max_length=8,
         ),
     ] = Field(description="Currency code")
-    fund_name: Annotated[
+    wallet_name: Annotated[
         str,
         StringConstraints(
             strip_whitespace=True,
             min_length=1,
         ),
-    ] = Field(description="Fund name (foreign key)")
+    ] = Field(description="Wallet name (foreign key)")
     category_name: Annotated[
         str,
         StringConstraints(

@@ -24,18 +24,18 @@ def init_test_db(db_path):
             (username, name, username),
         )
 
-    # Insert default funds if not exists
-    default_funds = [
+    # Insert default wallets if not exists
+    default_wallets = [
         ("Chi tiêu", ["ăn uống", "di chuyển"]),
         ("Tiết kiệm", ["du lịch singapore", "mua nhà", "mua xe"]),
     ]
 
-    # Insert funds
-    for fund_id, (fund_name, categories) in enumerate(default_funds):
+    # Insert wallets
+    for wallet_id, (wallet_name, categories) in enumerate(default_wallets):
         safe_execute(
             conn,
-            "INSERT INTO fund (id, fund_name, created_at, updated_at, by) SELECT ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM fund WHERE fund_name=?)",
-            (fund_id, fund_name, created_at, updated_at, test_user, fund_name),
+            "INSERT INTO wallet (id, wallet_name, created_at, updated_at, by) SELECT ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM wallet WHERE wallet_name=?)",
+            (wallet_id, wallet_name, created_at, updated_at, test_user, wallet_name),
         )
         for category_name in categories:
             category_id = (
@@ -43,16 +43,16 @@ def init_test_db(db_path):
             )
             safe_execute(
                 conn,
-                "INSERT INTO category (id, category_name, fund_id, created_at, updated_at, by) SELECT ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM category WHERE category_name=? AND fund_id=?)",
+                "INSERT INTO category (id, category_name, wallet_id, created_at, updated_at, by) SELECT ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM category WHERE category_name=? AND wallet_id=?)",
                 (
                     category_id,
                     category_name,
-                    fund_id,
+                    wallet_id,
                     created_at,
                     updated_at,
                     test_user,
                     category_name,
-                    fund_id,
+                    wallet_id,
                 ),
             )
 
@@ -76,7 +76,7 @@ def init_test_db(db_path):
         )
         safe_execute(
             conn,
-            "INSERT INTO transaction (id, datetime, amount, currency, fund_id, category_id, note, created_at, updated_at, by) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM transaction WHERE id=?)",
+            "INSERT INTO transaction (id, datetime, amount, currency, wallet_id, category_id, note, created_at, updated_at, by) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM transaction WHERE id=?)",
             (transaction_id,) + transaction + (transaction_id,),
         )
     conn.close()

@@ -10,9 +10,9 @@ from config.logger import logger
 from config.settings import settings
 from db.schema import (
     SQL_CATEGORY_SCHEMA,
-    SQL_FUND_SCHEMA,
     SQL_TRANSACTION_SCHEMA,
     SQL_USER_SCHEMA,
+    SQL_WALLET_SCHEMA,
 )
 
 
@@ -50,7 +50,7 @@ def display_table_conn(conn: duckdb.DuckDBPyConnection, table_name):
 
 def display_db(db_path):
     display_table(db_path, "user")
-    display_table(db_path, "fund")
+    display_table(db_path, "wallet")
     display_table(db_path, "category")
     display_table(db_path, "transaction")
 
@@ -60,7 +60,7 @@ def init_blank_db(db_path):
     cursor = conn.cursor()
     # Create database tables
     cursor.execute(SQL_USER_SCHEMA)
-    cursor.execute(SQL_FUND_SCHEMA)
+    cursor.execute(SQL_WALLET_SCHEMA)
     cursor.execute(SQL_CATEGORY_SCHEMA)
     cursor.execute(SQL_TRANSACTION_SCHEMA)
     conn.close()
@@ -73,17 +73,17 @@ def _create_db_from_sheet(
     # remove all tables
     conn.execute("DROP TABLE IF EXISTS transaction")
     conn.execute("DROP TABLE IF EXISTS category")
-    conn.execute("DROP TABLE IF EXISTS fund")
+    conn.execute("DROP TABLE IF EXISTS wallet")
     conn.execute("DROP TABLE IF EXISTS user")
     # Create database tables
     conn.execute(SQL_USER_SCHEMA)
-    conn.execute(SQL_FUND_SCHEMA)
+    conn.execute(SQL_WALLET_SCHEMA)
     conn.execute(SQL_CATEGORY_SCHEMA)
     conn.execute(SQL_TRANSACTION_SCHEMA)
     # Insert data into tables
     conn.register("v_expenses", data["expenses_df"])
     conn.register("v_users", data["users_df"])
-    conn.register("v_funds", data["funds_df"])
+    conn.register("v_wallets", data["wallets_df"])
     conn.register("v_categories", data["categories_df"])
     conn.sql(
         """
@@ -93,14 +93,14 @@ def _create_db_from_sheet(
     )
     conn.sql(
         """
-        INSERT INTO fund (id, fund_name, created_at, updated_at, by, note)
-        SELECT id, fund_name, created_at, updated_at, by, note FROM v_funds
+        INSERT INTO wallet (id, wallet_name, is_default, created_at, updated_at, by, note)
+        SELECT id, wallet_name, is_default, created_at, updated_at, by, note FROM v_wallets
         """
     )
     conn.sql(
         """
-        INSERT INTO category (id, category_name, fund_id, created_at, updated_at, by, note)
-        SELECT id, category_name, fund_id, created_at, updated_at, by, note FROM v_categories
+        INSERT INTO category (id, category_name, is_default, created_at, updated_at, by, note)
+        SELECT id, category_name, is_default, created_at, updated_at, by, note FROM v_categories
         """
     )
     conn.sql(
@@ -111,7 +111,7 @@ def _create_db_from_sheet(
             amount,
             currency,
             vnd_rate,
-            fund_id,
+            wallet_id,
             category_id,
             created_at,
             updated_at,
@@ -124,7 +124,7 @@ def _create_db_from_sheet(
             amount,
             currency,
             vnd_rate,
-            fund_id,
+            wallet_id,
             category_id,
             created_at,
             updated_at,
@@ -134,14 +134,14 @@ def _create_db_from_sheet(
         """
     )
     display_table_conn(conn, "user")
-    display_table_conn(conn, "fund")
+    display_table_conn(conn, "wallet")
     display_table_conn(conn, "category")
     display_table_conn(conn, "transaction")
 
     # Unregister as we store all data into local tables
     conn.unregister("v_expenses")
     conn.unregister("v_users")
-    conn.unregister("v_funds")
+    conn.unregister("v_wallets")
     conn.unregister("v_categories")
 
     conn.commit()
@@ -161,11 +161,34 @@ def read_google_sheet_table(
     return df
 
 
-def sync_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str):
+def write_google_sheet_table(
+    tool: GoogleSheetsTools,
+    spreadsheet_id: str,
+    spreadsheet_range: str,
+    df: pd.DataFrame,
+) -> str:
+    data: list[list] = [
+        # header
+        df.columns.to_list(),
+    ]
+
+    data.extend(df.fillna("").to_records(index=False).tolist())
+    # Or:
+    # df.values.tolist()
+
+    status = tool.update_sheet(
+        data,
+        spreadsheet_id=spreadsheet_id,
+        range_name=spreadsheet_range,
+    )
+    return status
+
+
+def pull_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str):
     # TODO: temporally hardcode due to specific post-processing
     ranges: dict[str, str] = {
         "expenses": "Expenses!A:Z",
-        "funds": "Funds!A:Z",
+        "wallets": "Wallets!A:Z",
         "users": "Users!A:Z",
         "categories": "Categories!A:Z",
     }
@@ -178,8 +201,8 @@ def sync_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str)
     expenses_df = read_google_sheet_table(
         googlesheet_tool, spreadsheet_id, ranges["expenses"]
     )
-    funds_df = read_google_sheet_table(
-        googlesheet_tool, spreadsheet_id, ranges["funds"]
+    wallets_df = read_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["wallets"]
     )
     users_df = read_google_sheet_table(
         googlesheet_tool, spreadsheet_id, ranges["users"]
@@ -189,8 +212,57 @@ def sync_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str)
     )
     data = {
         "expenses_df": expenses_df,
-        "funds_df": funds_df,
+        "wallets_df": wallets_df,
         "users_df": users_df,
         "categories_df": categories_df,
     }
     _create_db_from_sheet(conn, data)
+
+
+def push_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str):
+    # TODO: temporally hardcode due to specific post-processing
+    ranges: dict[str, str] = {
+        "expenses": "Expenses!A:Z",
+        "wallets": "Wallets!A:Z",
+        "users": "Users!A:Z",
+        "categories": "Categories!A:Z",
+    }
+    googlesheet_tool = GoogleSheetsTools(
+        scopes=[
+            "https://www.googleapis.com/auth/spreadsheets",
+        ],
+        creds_path=settings.GOOGLE_APPLICATION_CREDENTIALS,
+        token_path=Path(settings.CACHE_DIR) / "token.json",
+        update=True,
+    )
+    logger.info("Uploading data from Google Sheets...")
+    expenses_df = conn.sql("SELECT * FROM transaction").df()
+    wallets_df = conn.sql("SELECT * FROM wallet").df()
+    users_df = conn.sql("SELECT * FROM user").df()
+    categories_df = conn.sql("SELECT * FROM category").df()
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["expenses"], expenses_df
+    )
+    if "Error" in status:
+        return f"Cannot upload expenses sheet: {status}"
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["wallets"], wallets_df
+    )
+    if "Error" in status:
+        return f"Cannot upload wallets sheet: {status}"
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["users"], users_df
+    )
+    if "Error" in status:
+        return f"Cannot upload users sheet: {status}"
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["categories"], categories_df
+    )
+    if "Error" in status:
+        return f"Cannot upload categories sheet: {status}"
+
+    return "Successfully upload all local data"
