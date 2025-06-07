@@ -161,7 +161,30 @@ def read_google_sheet_table(
     return df
 
 
-def sync_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str):
+def write_google_sheet_table(
+    tool: GoogleSheetsTools,
+    spreadsheet_id: str,
+    spreadsheet_range: str,
+    df: pd.DataFrame,
+) -> str:
+    data: list[list] = [
+        # header
+        df.columns.to_list(),
+    ]
+
+    data.extend(df.fillna("").to_records(index=False).tolist())
+    # Or:
+    # df.values.tolist()
+
+    status = tool.update_sheet(
+        data,
+        spreadsheet_id=spreadsheet_id,
+        range_name=spreadsheet_range,
+    )
+    return status
+
+
+def pull_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str):
     # TODO: temporally hardcode due to specific post-processing
     ranges: dict[str, str] = {
         "expenses": "Expenses!A:Z",
@@ -194,3 +217,52 @@ def sync_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str)
         "categories_df": categories_df,
     }
     _create_db_from_sheet(conn, data)
+
+
+def push_google_sheet_data(conn: duckdb.DuckDBPyConnection, spreadsheet_id: str):
+    # TODO: temporally hardcode due to specific post-processing
+    ranges: dict[str, str] = {
+        "expenses": "Expenses!A:Z",
+        "wallets": "Wallets!A:Z",
+        "users": "Users!A:Z",
+        "categories": "Categories!A:Z",
+    }
+    googlesheet_tool = GoogleSheetsTools(
+        scopes=[
+            "https://www.googleapis.com/auth/spreadsheets",
+        ],
+        creds_path=settings.GOOGLE_APPLICATION_CREDENTIALS,
+        token_path=Path(settings.CACHE_DIR) / "token.json",
+        update=True,
+    )
+    logger.info("Uploading data from Google Sheets...")
+    expenses_df = conn.sql("SELECT * FROM transaction").df()
+    wallets_df = conn.sql("SELECT * FROM wallet").df()
+    users_df = conn.sql("SELECT * FROM user").df()
+    categories_df = conn.sql("SELECT * FROM category").df()
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["expenses"], expenses_df
+    )
+    if "Error" in status:
+        return f"Cannot upload expenses sheet: {status}"
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["wallets"], wallets_df
+    )
+    if "Error" in status:
+        return f"Cannot upload wallets sheet: {status}"
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["users"], users_df
+    )
+    if "Error" in status:
+        return f"Cannot upload users sheet: {status}"
+
+    status = write_google_sheet_table(
+        googlesheet_tool, spreadsheet_id, ranges["categories"], categories_df
+    )
+    if "Error" in status:
+        return f"Cannot upload categories sheet: {status}"
+
+    return "Successfully upload all local data"

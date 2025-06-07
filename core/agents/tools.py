@@ -3,6 +3,8 @@ import json
 import duckdb
 from agno.tools.toolkit import Toolkit
 
+from db.utils import push_google_sheet_data
+
 
 class DataRetrievalTools(Toolkit):
     def __init__(self, conn: duckdb.DuckDBPyConnection, **kwargs):
@@ -12,6 +14,7 @@ class DataRetrievalTools(Toolkit):
         self.register(self.find_wallet_id_by_name)
         self.register(self.find_default_wallet)
         self.register(self.find_default_category)
+        self.register(self.push_google_sheet_data)
 
     def find_category_id_by_name(self, category_name: str) -> str:
         """Use this tool to find category's id given a category name
@@ -96,3 +99,14 @@ class DataRetrievalTools(Toolkit):
         if len(df) > 1:
             msg = "There are many default category settings. Ask user"
             return msg
+
+    def push_google_sheet_data(self, spreadsheet_id: str) -> str:
+        """Use this tool to push all local data to Google Sheet
+
+        Args:
+            spreadsheet_id: spreadsheet_id of the google sheet
+
+        Returns:
+            a string indicate google sheet status
+        """
+        return push_google_sheet_data(self._conn, spreadsheet_id)

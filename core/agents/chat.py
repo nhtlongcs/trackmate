@@ -12,7 +12,7 @@ from agno.tools.reasoning import ReasoningTools
 
 from config.logger import logger
 from config.settings import settings
-from db.utils import sync_google_sheet_data
+from db.utils import pull_google_sheet_data
 
 from .tools import DataRetrievalTools
 
@@ -63,9 +63,10 @@ def create_agent_v2(
 
     duckdb_tool = DuckDbTools(db_path=f"./data/{user}_expenses.db")
     logger.info("Syncing data from spreadsheet to local before processing")
-    sync_google_sheet_data(
+    spreadsheet_id = "1JfOz-mr299P9-TPKuazX6ApOa8fIlP3OQcmzsbFcFMQ"
+    pull_google_sheet_data(
         duckdb_tool.connection,
-        spreadsheet_id="1JfOz-mr299P9-TPKuazX6ApOa8fIlP3OQcmzsbFcFMQ",
+        spreadsheet_id=spreadsheet_id,
     )
 
     db_context: str = dedent(
@@ -81,6 +82,7 @@ def create_agent_v2(
     context = {
         "username": user,
         "db": db_context,
+        "spreadsheet_id": spreadsheet_id,
     }
 
     return Agent(
@@ -115,7 +117,7 @@ def create_agent_v2(
             3. ** Execute SQL query **:
             - If the query is SELECT, show the data in tabular format
             - For INSERT queries, always find `id` before execution. It should be the incremented value from the last value in the table
-            - Always confirm to user before doing a tool call when modifying data
+            - If the query is INSERT/DELETE/UPDATE, always confirm to user. If yes, push all local data to Google Sheet **after** execution
             """
         ),
         stream_intermediate_steps=True,
