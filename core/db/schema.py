@@ -13,6 +13,8 @@ SQL_WALLET_SCHEMA = """
 CREATE TABLE IF NOT EXISTS wallet (
     id INTEGER PRIMARY KEY,
     wallet_name TEXT NOT NULL UNIQUE,
+    threshold REAL,
+    is_default BOOL NOT NULL DEFAULT FALSE,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     by TEXT NOT NULL,
@@ -24,12 +26,11 @@ SQL_CATEGORY_SCHEMA = """
 CREATE TABLE IF NOT EXISTS category (
     id INTEGER PRIMARY KEY,
     category_name TEXT NOT NULL UNIQUE,
-    wallet_id INTEGER NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     by TEXT NOT NULL,
+    is_default BOOL NOT NULL DEFAULT FALSE,
     note TEXT,
-    FOREIGN KEY(wallet_id) REFERENCES wallet(id),
     FOREIGN KEY(by) REFERENCES user(username)
 )
 """
@@ -42,7 +43,7 @@ CREATE TABLE IF NOT EXISTS transaction (
     currency TEXT NOT NULL,
     vnd_rate REAL NOT NULL DEFAULT 1.0,
     wallet_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
+    category_id INTEGER,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     by TEXT NOT NULL,

@@ -1,3 +1,5 @@
+import json
+
 import duckdb
 from agno.tools.toolkit import Toolkit
 
@@ -8,6 +10,8 @@ class DataRetrievalTools(Toolkit):
         super().__init__(name="data_retrieval_tool", **kwargs)
         self.register(self.find_category_id_by_name)
         self.register(self.find_wallet_id_by_name)
+        self.register(self.find_default_wallet)
+        self.register(self.find_default_category)
 
     def find_category_id_by_name(self, category_name: str) -> str:
         """Use this tool to find category's id given a category name
@@ -44,3 +48,51 @@ class DataRetrievalTools(Toolkit):
             orient="records",
             force_ascii=False,
         )
+
+    def find_default_wallet(self) -> str:
+        """Use this tool to find default wallet for a transaction
+
+        Returns:
+            a json contains wallet id and wallet name
+        """
+
+        df = self._conn.execute(
+            "SELECT id, wallet_name FROM wallet w WHERE w.is_default = TRUE"
+        ).df()
+
+        if len(df) == 1:
+            obj = {"id": int(df["id"].iloc[0]), "name": df["wallet_name"].iloc[0]}
+            out = json.dumps(obj, ensure_ascii=False)
+            return out
+
+        if len(df) == 0:
+            msg = "Don't have default wallet setting. Ask user"
+            return msg
+
+        if len(df) > 1:
+            msg = "There are many default wallet settings. Ask user"
+            return msg
+
+    def find_default_category(self) -> str:
+        """Use this tool to find default category for a transaction
+
+        Returns:
+            a json contains category id and category name
+        """
+
+        df = self._conn.execute(
+            "SELECT id, category_name FROM category c WHERE c.is_default = TRUE"
+        ).df()
+
+        if len(df) == 1:
+            obj = {"id": int(df["id"].iloc[0]), "name": df["category_name"].iloc[0]}
+            out = json.dumps(obj, ensure_ascii=False)
+            return out
+
+        if len(df) == 0:
+            msg = "Don't have default category setting. Ask user"
+            return msg
+
+        if len(df) > 1:
+            msg = "There are many default category settings. Ask user"
+            return msg

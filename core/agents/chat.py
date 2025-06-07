@@ -85,7 +85,10 @@ def create_agent_v2(
 
     return Agent(
         name="Expense Agency",
-        model=Gemini(id="gemini-2.0-flash-exp", api_key=settings.GEMINI_API_KEY),
+        model=Gemini(
+            id="gemini-2.5-flash-preview-05-20",
+            api_key=settings.GEMINI_API_KEY,
+        ),
         memory=memory,
         tools=[
             duckdb_tool,
@@ -100,19 +103,20 @@ def create_agent_v2(
         description="Hiểu yêu cầu người dùng, lấy thông tin cần thiết, thực thi SQL phù hợp.",
         instructions=dedent(
             """
-            Phân tích yêu cầu chi tiêu (ví dụ: số tiền, loại chi tiêu, ngày, quỹ).
-            Nếu thiếu thông tin → hỏi người dùng.
+            1. ** Analyze user command **:
+            - Get information and type of queries from user, e.g., amount, category, date, wallets, etc.
+            - If users don't provide enough information, try to get default values
+            - If provided values don't exist to find corresponding id, support user to create it if the column is required. Otherwise, leave it NULL.
 
-            Sau khi đủ:
-            1. Tạo SQL (INSERT/SELECT/UPDATE) phù hợp
-            2. Giải thích hành động của câu SQL
-            3. Thực hiện câu lệnh SQL
+            2. ** Make SQL query **:
+            - Create a proper SELECT/INSERT/DELETE/UPDATE from the user command
+            - Explain your understanding about the query and its side effects
+
+            3. ** Execute SQL query **:
+            - If the query is SELECT, show the data in tabular format
+            - For INSERT queries, always find `id` before execution. It should be the incremented value from the last value in the table
+            - Always confirm to user before doing a tool call when modifying data
             """
-            # - Truyền câu SQL đó cho Executor
-            # - Giải thích ý định để Executor rõ hành động
-            # Lưu ý:
-            # - Nếu là SELECT → hiển thị bảng kết quả đẹp
-            # - Nếu là INSERT/UPDATE/DELETE → xác nhận đã thực hiện, ghi rõ ảnh hưởng
         ),
         stream_intermediate_steps=True,
         add_datetime_to_instructions=True,

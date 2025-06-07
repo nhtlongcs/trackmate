@@ -93,14 +93,14 @@ def _create_db_from_sheet(
     )
     conn.sql(
         """
-        INSERT INTO wallet (id, wallet_name, created_at, updated_at, by, note)
-        SELECT id, wallet_name, created_at, updated_at, by, note FROM v_wallets
+        INSERT INTO wallet (id, wallet_name, is_default, created_at, updated_at, by, note)
+        SELECT id, wallet_name, is_default, created_at, updated_at, by, note FROM v_wallets
         """
     )
     conn.sql(
         """
-        INSERT INTO category (id, category_name, wallet_id, created_at, updated_at, by, note)
-        SELECT id, category_name, wallet_id, created_at, updated_at, by, note FROM v_categories
+        INSERT INTO category (id, category_name, is_default, created_at, updated_at, by, note)
+        SELECT id, category_name, is_default, created_at, updated_at, by, note FROM v_categories
         """
     )
     conn.sql(
